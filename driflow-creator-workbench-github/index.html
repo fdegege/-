@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Driflow Creator Workbench · 原型</title>
+  <style>
+    :root{--ink:#1d2735;--muted:#718096;--line:#e6eaf0;--canvas:#f5f7fa;--paper:#fff;--nav:#172435;--nav2:#20344a;--blue:#4775ef;--blue-soft:#edf2ff;--green:#218765;--green-soft:#eaf7f1;--amber:#b97720;--amber-soft:#fff5e6;--red:#c95353;--purple:#7662c6;--shadow:0 12px 34px rgba(28,44,67,.11)}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--canvas);font-family:Inter,"Segoe UI","Microsoft YaHei",Arial,sans-serif;color:var(--ink);font-size:14px}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{min-height:100vh;display:flex}
+    .sidebar{width:238px;flex:none;background:var(--nav);color:#dce4ef;padding:22px 14px;display:flex;flex-direction:column}
+    .brand{display:flex;align-items:center;gap:11px;padding:0 10px 27px}
+    .brand-mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,#9db6ff,#5278f2);display:grid;place-items:center;color:#14243a;font-weight:800;font-size:17px}
+    .brand-name{font-weight:700;letter-spacing:.1px;color:#fff;font-size:15px}
+    .brand-sub{font-size:10px;color:#9cacc0;margin-top:3px;letter-spacing:1.2px}
+    .workspace{margin:0 5px 22px;padding:12px;background:var(--nav2);border:1px solid #344b63;border-radius:11px}
+    .workspace-label{font-size:10px;color:#9bacc0;margin-bottom:7px}
+    .workspace-value{font-weight:600;color:#f5f7fb;display:flex;justify-content:space-between;align-items:center}
+    .nav-label{padding:0 10px 9px;color:#8295aa;font-size:10px;letter-spacing:1.2px}
+    .nav{display:grid;gap:4px}
+    .nav-item{width:100%;border:0;background:transparent;color:#bfcbda;border-radius:9px;text-align:left;padding:10px;display:flex;align-items:center;gap:11px;transition:.16s}
+    .nav-item:hover{background:#20344a;color:white}
+    .nav-item.active{background:#2d4560;color:white}
+    .nav-icon{width:18px;text-align:center;color:#9db1ca;font-size:16px}
+    .nav-item.active .nav-icon{color:#a9bdff}
+    .nav-count{margin-left:auto;font-size:10px;padding:3px 7px;background:#3c536c;border-radius:999px;color:#dce7f4}
+    .sidebar-bottom{margin-top:auto}
+    .sidebar-note{margin:18px 4px 8px;padding:12px;border-radius:10px;background:#21364b;color:#c7d2df;font-size:11px;line-height:1.55}
+    .sidebar-note b{display:block;color:#fff;margin-bottom:4px}
+    .user-mini{border-top:1px solid #34475b;padding:17px 7px 0;display:flex;align-items:center;gap:10px}
+    .user-avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#d8e4ff;color:#3d5ec5;font-weight:700}
+    .user-name{font-size:12px;color:#f6f8fa;font-weight:600}
+    .user-role{font-size:10px;color:#9eb0c5;margin-top:3px}
+    .main{min-width:0;flex:1}
+    .topbar{height:66px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:20px}
+    .crumb{font-size:13px;color:#718096}.crumb strong{color:#293749;font-weight:600}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .search-global{width:236px;position:relative}
+    .search-global input{width:100%;height:36px;background:#f7f9fb;border:1px solid #e8edf2;border-radius:8px;padding:0 12px 0 34px;outline:0}
+    .search-global input:focus,.field input:focus,.field select:focus,.field textarea:focus{border-color:#8ca7ff;box-shadow:0 0 0 3px rgba(71,117,239,.1)}
+    .search-symbol{position:absolute;left:12px;top:9px;color:#91a0b0}
+    .icon-button{height:36px;width:36px;border:1px solid var(--line);background:#fff;border-radius:9px;color:#66778b}
+    .icon-button:hover,.btn:hover{filter:brightness(.98)}
+    .page{padding:27px 30px 44px;max-width:1600px;margin:0 auto}
+    .page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+    .eyebrow{color:#7a8ca0;font-size:11px;margin-bottom:7px}
+    h1{font-size:23px;line-height:1.25;margin:0;color:#1f2c3c;letter-spacing:-.4px}
+    .subhead{color:#77879a;font-size:12px;margin-top:7px;line-height:1.5}
+    .heading-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{height:37px;border:1px solid #dce3ec;background:#fff;color:#425267;border-radius:8px;padding:0 13px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+    .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    .btn-quiet{border-color:transparent;background:transparent;color:#64758a}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-small{height:31px;padding:0 10px;font-size:11px}
+    .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:600;white-space:nowrap}
+    .pill-blue{color:#496bd0;background:#edf2ff}.pill-green{color:#278060;background:#eaf7f1}.pill-amber{color:#a66b1c;background:#fff3df}.pill-gray{color:#68798d;background:#eef1f5}.pill-red{color:#b14b4b;background:#fff0ef}
+    .card{background:var(--paper);border:1px solid var(--line);border-radius:12px}
+    .card-pad{padding:18px}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:17px}
+    .metric{padding:17px 18px;background:#fff;border:1px solid var(--line);border-radius:11px;min-height:108px}
+    .metric-head{font-size:11px;color:#7b8a9d;display:flex;justify-content:space-between}
+    .metric-num{font-size:25px;font-weight:700;letter-spacing:-.6px;margin:12px 0 5px}
+    .metric-foot{font-size:10px;color:#8694a4}
+    .metric-up{color:#298364;font-weight:600}
+    .section-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+    h2{font-size:15px;margin:0;font-weight:650;color:#28374a}
+    h3{font-size:13px;margin:0;font-weight:650;color:#344357}
+    .muted{font-size:11px;color:#8290a1}
+    .dashboard-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(290px,.85fr);gap:15px}
+    .funnel-card,.todo-card,.table-card,.section-card{background:#fff;border:1px solid var(--line);border-radius:12px}
+    .funnel-card,.todo-card{padding:18px}
+    .funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:20px}
+    .funnel-step{position:relative;padding:12px 10px;background:#f7f9fc;border-radius:9px;min-height:89px}
+    .funnel-step:not(:last-child):after{content:"›";position:absolute;right:-7px;top:25px;z-index:2;color:#aab5c3;font-size:18px}
+    .funnel-label{font-size:10px;color:#718096}
+    .funnel-value{font-size:19px;font-weight:700;margin:9px 0 3px}
+    .funnel-change{font-size:9px;color:#8b98a8}
+    .todo{display:grid;gap:2px;margin-top:9px}
+    .todo-item{display:flex;gap:11px;align-items:center;padding:12px 0;border-bottom:1px solid #eef1f4}
+    .todo-item:last-child{border-bottom:0}
+    .todo-dot{width:8px;height:8px;border-radius:50%;background:#edb052;flex:none}
+    .todo-dot.red{background:#df7770}.todo-dot.blue{background:#7493ee}
+    .todo-text{font-size:11px;line-height:1.45;color:#3b4b5e}
+    .todo-meta{font-size:9px;color:#909bab;margin-top:3px}
+    .todo-num{margin-left:auto;font-size:12px;font-weight:700;color:#3f5065}
+    .recent-card{margin-top:15px;padding:18px;background:#fff;border:1px solid var(--line);border-radius:12px}
+    .table-scroll{overflow:auto}
+    table{width:100%;border-collapse:collapse;text-align:left;white-space:nowrap}
+    th{font-size:10px;color:#8a97a6;font-weight:600;padding:11px 9px;border-bottom:1px solid var(--line)}
+    td{padding:12px 9px;border-bottom:1px solid #f0f2f5;font-size:11px;color:#536276}
+    tr:last-child td{border-bottom:0}
+    .creator-cell{display:flex;align-items:center;gap:9px}
+    .avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#f1e9db;color:#715c42;font-size:11px;font-weight:700;flex:none}
+    .avatar.a2{background:#e2edf4;color:#3b667b}.avatar.a3{background:#f1e2e9;color:#8b5168}.avatar.a4{background:#e7e5f6;color:#5b5394}.avatar.a5{background:#e5eee4;color:#547658}.avatar.a6{background:#f3e7dd;color:#945d37}
+    .creator-name{font-weight:650;color:#344357;font-size:11px}
+    .creator-handle{color:#8b98a7;font-size:10px;margin-top:3px}
+    .page-view{display:none}
+    .page-view.active{display:block}
+    .match-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:15px;align-items:start}
+    .filter-panel{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    .filter-head{padding:15px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .filter-body{padding:15px 16px}
+    .field{display:grid;gap:6px;margin-bottom:14px}
+    .field label,.field-label{font-size:10px;color:#64758a;font-weight:600}
+    .field input,.field select,.field textarea{height:35px;border:1px solid #dfe5ec;border-radius:7px;padding:0 10px;outline:0;background:white;color:#344357;font-size:11px;width:100%}
+    .field textarea{padding:9px 10px;height:auto;min-height:74px;resize:vertical;line-height:1.45}
+    .checkline{display:flex;align-items:center;gap:8px;font-size:11px;color:#526278;margin:10px 0}
+    .checkline input{accent-color:var(--blue);width:14px;height:14px;margin:0}
+    .range-top{display:flex;justify-content:space-between;align-items:center}
+    input[type=range]{width:100%;accent-color:var(--blue)}
+    .preset-row{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 15px}
+    .preset{border:1px solid #e2e7ee;border-radius:7px;background:#fff;color:#718096;font-size:10px;padding:6px 8px}
+    .preset.active{color:#496bd0;border-color:#cbd7ff;background:#f2f5ff}
+    .filter-footer{padding:12px 16px 15px;border-top:1px solid var(--line)}
+    .filter-footer .btn{width:100%}
+    .match-main{min-width:0}
+    .match-context{background:linear-gradient(110deg,#f0f4ff,#f5f7fc);border:1px solid #e2e9ff;border-radius:11px;padding:15px 17px;margin-bottom:13px}
+    .product-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(180px,.7fr) minmax(180px,.7fr);gap:12px;align-items:end}
+    .product-row .field{margin:0}
+    .goal-row{display:flex;align-items:center;gap:7px;margin-top:12px;flex-wrap:wrap}
+    .goal-label{font-size:10px;color:#65748a;margin-right:4px}
+    .goal-btn{border:1px solid #dfe5ef;border-radius:7px;background:#fff;color:#617188;padding:7px 10px;font-size:10px}
+    .goal-btn.active{background:#314fdd;border-color:#314fdd;color:#fff}
+    .goal-hint{margin-left:auto;color:#77869b;font-size:10px}
+    .match-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0}
+    .match-count{font-size:12px;color:#596b7e}
+    .match-count strong{font-size:18px;color:#28374a;margin-right:4px}
+    .toolbar-actions{display:flex;gap:7px;align-items:center}
+    .toolbar-actions select{height:33px;border:1px solid #dfe5ec;background:#fff;border-radius:7px;padding:0 8px;color:#5e6e80;font-size:10px}
+    .tier-tabs{display:flex;gap:16px;border-bottom:1px solid var(--line);margin-bottom:10px}
+    .tier-tab{border:0;background:transparent;padding:10px 2px;color:#8491a0;font-size:11px;position:relative}
+    .tier-tab.active{color:#385ed4;font-weight:650}
+    .tier-tab.active:after{content:"";height:2px;position:absolute;left:0;right:0;bottom:-1px;background:#4a72ea;border-radius:3px}
+    .tier-tab span{font-size:9px;margin-left:4px;color:#8a97a6}
+    .result-list{display:grid;gap:10px}
+    .creator-card{padding:15px 16px;background:#fff;border:1px solid var(--line);border-radius:11px;display:grid;grid-template-columns:minmax(0,1fr) 186px;gap:14px}
+    .creator-main{min-width:0}
+    .creator-top{display:flex;align-items:center;gap:10px}
+    .creator-card .avatar{width:40px;height:40px;border-radius:12px}
+    .creator-card .creator-name{font-size:12px}
+    .creator-card .creator-handle{font-size:10px}
+    .creator-meta{display:flex;gap:13px;flex-wrap:wrap;margin:13px 0 10px;color:#65758a;font-size:10px}
+    .creator-meta strong{color:#35465a;font-size:11px}
+    .tag-row{display:flex;gap:5px;flex-wrap:wrap}
+    .tag{font-size:9px;color:#64758a;background:#f2f4f7;padding:5px 7px;border-radius:5px}
+    .tag.good{color:#25815f;background:#eaf6f1}
+    .reason{margin-top:11px;padding:9px 10px;border-radius:7px;background:#f7f9fc;color:#64748a;font-size:10px;line-height:1.5}
+    .reason b{color:#496bd0;font-weight:650}
+    .match-score{border-left:1px solid #edf0f4;padding-left:14px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+    .score-head{display:flex;align-items:center;gap:8px}
+    .score-num{font-size:25px;font-weight:750;letter-spacing:-.7px;color:#334d9e}
+    .score-caption{font-size:9px;color:#8995a4}
+    .score-bar{height:5px;width:100%;background:#edf0f4;border-radius:6px;margin:7px 0 8px;overflow:hidden}
+    .score-bar span{height:100%;display:block;background:#6b88ed;border-radius:6px}
+    .confidence{font-size:9px;color:#75859a}
+    .score-actions{display:flex;gap:6px;margin-top:10px}
+    .score-actions .btn{height:28px;font-size:9px;padding:0 8px}
+    .empty-state{padding:44px 15px;text-align:center;color:#8290a1;background:#fff;border:1px dashed #d6dee8;border-radius:11px;font-size:12px}
+    .list-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+    .list-filter{display:flex;gap:7px;flex-wrap:wrap}
+    .list-filter input,.list-filter select{height:34px;border:1px solid #dfe5ec;background:white;border-radius:7px;padding:0 10px;font-size:11px;color:#526278}
+    .outreach-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:15px}
+    .outreach-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+    .channel{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #e5e9ef;border-radius:9px;margin-top:9px;cursor:pointer}
+    .channel.selected{border-color:#9db1fa;background:#f6f8ff}
+    .channel input{accent-color:var(--blue);margin-top:3px}
+    .channel-title{font-size:11px;color:#38485c;font-weight:650}
+    .channel-desc{font-size:10px;color:#8390a0;line-height:1.45;margin-top:3px}
+    .outreach-table{margin-top:14px}
+    .status-cell{font-size:10px}
+    .timeline{display:grid;gap:0;margin-top:15px}
+    .timeline-item{display:grid;grid-template-columns:20px 1fr;gap:10px;position:relative;padding-bottom:18px}
+    .timeline-item:not(:last-child):before{content:"";position:absolute;left:7px;top:16px;bottom:0;width:1px;background:#e3e8ef}
+    .timeline-dot{width:15px;height:15px;border-radius:50%;border:3px solid #c7d4ff;background:#fff;z-index:1}
+    .timeline-item.done .timeline-dot{background:#5f7ee9;border-color:#dfe6ff}
+    .timeline-title{font-size:11px;color:#405165;font-weight:600}
+    .timeline-copy{font-size:10px;color:#8995a4;margin-top:4px;line-height:1.45}
+    .pipeline{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;overflow:auto;padding-bottom:8px}
+    .pipe-col{background:#f0f3f7;border-radius:10px;padding:10px;min-height:240px}
+    .pipe-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:650;color:#57677b;margin-bottom:9px}
+    .pipe-count{background:#e1e6ed;border-radius:999px;padding:2px 7px;font-size:9px;color:#66768a}
+    .pipe-card{background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:10px;margin-bottom:7px}
+    .pipe-card-name{font-size:10px;font-weight:650;color:#405064}
+    .pipe-card-meta{font-size:9px;color:#8996a5;margin-top:5px}
+    .pipe-due{margin-top:8px;font-size:9px;color:#b37622}
+    .review-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:15px}
+    .review-list{display:grid;gap:10px}
+    .review-item{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:12px}
+    .review-score{font-size:20px;font-weight:700;color:#435fae}
+    .feedback-options{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .feedback-option{border:1px solid #dfe5ec;background:#fff;border-radius:6px;color:#68788a;padding:6px 8px;font-size:9px}
+    .feedback-option.selected{background:#eef3ff;color:#4366d6;border-color:#cbd7ff}
+    .progress-wrap{margin:12px 0}
+    .progress-label{display:flex;justify-content:space-between;font-size:10px;color:#64758a;margin-bottom:6px}
+    .progress-track{height:7px;background:#edf0f4;border-radius:10px;overflow:hidden}
+    .progress-track i{display:block;height:100%;background:#6380e8;border-radius:10px}
+    .bar-chart{display:flex;align-items:end;gap:13px;height:150px;margin-top:17px;padding:0 10px 21px;border-bottom:1px solid #e6eaf0}
+    .bar-group{height:100%;display:flex;align-items:end;gap:4px;position:relative;flex:1}
+    .bar{width:50%;max-width:24px;background:#91a7f2;border-radius:4px 4px 0 0}
+    .bar.secondary{background:#d4dcf4}
+    .bar-label{position:absolute;bottom:-19px;left:50%;transform:translateX(-50%);font-size:9px;color:#8895a5;white-space:nowrap}
+    .legend{display:flex;gap:13px;font-size:9px;color:#8190a1;margin-top:9px}
+    .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;background:#91a7f2;margin-right:4px}
+    .legend .secondary{background:#d4dcf4}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(16,28,43,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:30}
+    .modal-backdrop.open{display:flex}
+    .modal{width:min(560px,100%);background:#fff;border-radius:14px;box-shadow:var(--shadow);overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+    .modal-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .modal-head h2{font-size:15px}
+    .modal-body{padding:18px 20px;overflow:auto}
+    .modal-foot{padding:13px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .modal-x{border:0;background:transparent;font-size:20px;color:#8491a0}
+    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .message-preview{background:#f7f8fa;border:1px solid #edf0f4;border-radius:9px;padding:13px;font-size:11px;line-height:1.65;color:#4b5d72;white-space:pre-wrap}
+    .toast{position:fixed;right:22px;bottom:22px;background:#25364a;color:#fff;padding:11px 15px;border-radius:9px;font-size:11px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:.2s;z-index:40;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .notice{border:1px solid #f0ddb8;background:#fff8e9;border-radius:8px;color:#896323;padding:10px 12px;font-size:10px;line-height:1.5;margin:12px 0}
+    .source-note{font-size:9px;color:#9aa5b2;margin-top:9px}
+    .nav-group{margin:0 0 14px}
+    .nav-group-label{padding:8px 10px 6px;color:#8295aa;font-size:10px;letter-spacing:.8px;text-transform:uppercase}
+    .nav-item:focus-visible,.mobile-menu:focus-visible{outline:2px solid #a9bdff;outline-offset:2px}
+    .mobile-menu{display:none;border:0;background:transparent;color:#344357;border-radius:8px;width:40px;height:40px;font-size:19px}
+    .nav-scrim{display:none}
+    @media(max-width:1100px){.sidebar{width:208px}.page{padding:23px 20px}.topbar{padding:0 20px}.match-layout{grid-template-columns:225px minmax(0,1fr)}.creator-card{grid-template-columns:minmax(0,1fr) 150px}.product-row{grid-template-columns:1fr 1fr}.product-row .field:first-child{grid-column:1/-1}}
+    @media(max-width:820px){.sidebar{position:fixed;inset:0 auto 0 0;z-index:30;width:270px;padding:20px 14px;transform:translateX(-102%);transition:transform .22s ease;box-shadow:0 16px 40px rgba(14,28,44,.25)}.sidebar.open{transform:translateX(0)}.nav-scrim.open{display:block;position:fixed;inset:0;z-index:29;background:rgba(16,27,41,.42)}.mobile-menu{display:inline-grid;place-items:center;flex:none}.topbar{gap:10px}.page{padding:20px 14px}.topbar{padding:0 14px}.search-global{width:190px}.metric-grid{grid-template-columns:repeat(2,1fr)}.dashboard-grid,.outreach-grid,.review-grid{grid-template-columns:1fr}.match-layout{grid-template-columns:1fr}.filter-panel{order:2}.match-main{order:1}.filter-body{display:grid;grid-template-columns:1fr 1fr;column-gap:14px}.filter-footer{padding-top:0}.creator-card{grid-template-columns:1fr}.match-score{border-left:0;border-top:1px solid #edf0f4;padding:11px 0 0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}.score-bar{margin:0}.confidence{display:none}.score-actions{margin:0}.pipeline{grid-template-columns:repeat(5,160px)}}
+    @media(max-width:560px){.topbar{height:58px}.crumb{display:none}.top-actions{width:100%;justify-content:flex-end}.search-global{width:auto;flex:1}.page-heading{display:block}.heading-actions{margin-top:13px}.metric-grid{gap:8px}.metric{padding:13px;min-height:96px}.metric-num{font-size:21px}.funnel{grid-template-columns:1fr 1fr}.funnel-step:not(:last-child):after{display:none}.product-row{grid-template-columns:1fr}.product-row .field:first-child{grid-column:auto}.goal-hint{width:100%;margin:0}.match-toolbar{align-items:flex-start;flex-direction:column}.toolbar-actions{width:100%;justify-content:space-between}.filter-body{grid-template-columns:1fr}.creator-card{padding:13px}.match-score{grid-template-columns:auto 1fr}.score-actions{grid-column:1/-1}.modal-grid{grid-template-columns:1fr}.page{padding:16px 11px 32px}.heading-actions .btn{flex:1}.pipeline{grid-template-columns:repeat(5,150px)}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="mainSidebar">
+    <div class="brand"><div class="brand-mark">D</div><div><div class="brand-name">Driflow Creator</div><div class="brand-sub">CREATOR WORKBENCH</div></div></div>
+    <div class="workspace"><div class="workspace-label">当前工作区</div><div class="workspace-value">巴西 FMCG 出海 <span>⌄</span></div></div>
+    <nav class="nav" aria-label="主导航">
+      <div class="nav-group"><div class="nav-group-label">工作台</div>
+        <button class="nav-item active" data-page="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">▦</span><span>工作台</span></button>
+      </div>
+      <div class="nav-group"><div class="nav-group-label">达人拓展</div>
+        <button class="nav-item" data-page="discover"><span class="nav-icon" aria-hidden="true">⌕</span><span>发现达人</span></button>
+        <button class="nav-item" data-page="creators"><span class="nav-icon" aria-hidden="true">♙</span><span>达人库</span></button>
+      </div>
+      <div class="nav-group"><div class="nav-group-label">合作管理</div>
+        <button class="nav-item" data-page="outreach"><span class="nav-icon" aria-hidden="true">↗</span><span>建联中心</span><span class="nav-count" id="batchNavCount" title="未完成批次数">3</span></button>
+        <button class="nav-item" data-page="pipeline"><span class="nav-icon" aria-hidden="true">◷</span><span>合作履约</span></button>
+      </div>
+      <div class="nav-group"><div class="nav-group-label">分析</div>
+        <button class="nav-item" data-page="insights"><span class="nav-icon" aria-hidden="true">▤</span><span>数据复盘</span></button>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-note"><b>AI 助手已就绪</b>按产品卖点筛选巴西本地达人，并生成葡萄牙语建联草稿。</div>
+      <div class="user-mini"><div class="user-avatar">林</div><div><div class="user-name">林晓 · 项目负责人</div><div class="user-role">Driflow 团队</div></div></div>
+    </div>
+  </aside>
+  <div class="nav-scrim" id="navScrim" aria-hidden="true"></div>
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenuBtn" aria-label="打开导航" aria-expanded="false" aria-controls="mainSidebar"><span aria-hidden="true">☰</span></button>
+      <div class="crumb">巴西 FMCG 出海 <span style="color:#bcc5d0"> / </span> <strong id="crumbCurrent">工作台</strong></div>
+      <div class="top-actions">
+        <div class="search-global"><span class="search-symbol">⌕</span><input id="globalSearch" type="search" placeholder="搜索达人、批次或产品"></div>
+        <button class="icon-button" id="notificationBtn" aria-label="通知">♧</button>
+        <div class="user-avatar" style="width:29px;height:29px;font-size:11px">林</div>
+      </div>
+    </header>
+    <div class="page">
+      <section class="page-view active" id="page-overview">
+        <div class="page-heading">
+          <div><div class="eyebrow">巴西达人管理 · 演示数据</div><h1>业务总览</h1><div class="subhead">从达人发现到可复用的品牌合作关系</div></div>
+          <div class="heading-actions"><button class="btn" id="overviewImport">⇧ 导入达人名单</button><button class="btn btn-primary" data-go="discover">✦ 开始 AI 匹配</button></div>
+        </div>
+        <div class="source-note" style="margin:-10px 0 12px">演示数据仅展示交互样例；达人总量和筛选结果来自当前工作区数据，不设固定人数值。</div>
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-head">达人总量 <span>当前工作区</span></div><div class="metric-num" id="creatorTotalStat">—</div><div class="metric-foot"><span class="metric-up">86%</span> 已完成去重与基础校验</div></div>
+          <div class="metric"><div class="metric-head">高匹配候选 <span>演示推荐</span></div><div class="metric-num" id="highMatchStat">—</div><div class="metric-foot"><span class="metric-up">+64</span> 本周新发现</div></div>
+          <div class="metric"><div class="metric-head">建联中 <span>本月项目</span></div><div class="metric-num" id="metricOutreach">186</div><div class="metric-foot">待回复 <b>74</b> · 已回复 <b>39</b></div></div>
+          <div class="metric"><div class="metric-head">内容履约率 <span>近 30 天</span></div><div class="metric-num">72%</div><div class="metric-foot"><span class="metric-up">+8.4%</span> 较上月</div></div>
+        </div>
+        <div class="dashboard-grid">
+          <section class="funnel-card">
+            <div class="section-row"><div><h2>达人合作漏斗</h2><div class="muted" style="margin-top:5px">巴西 FMCG · 近 30 天</div></div><button class="btn btn-quiet btn-small" data-go="insights">查看复盘 →</button></div>
+            <div class="funnel">
+              <div class="funnel-step"><div class="funnel-label">名单候选</div><div class="funnel-value" id="funnelCreatorTotal">—</div><div class="funnel-change">100%</div></div>
+              <div class="funnel-step"><div class="funnel-label">匹配通过</div><div class="funnel-value">1,284</div><div class="funnel-change">42.8%</div></div>
+              <div class="funnel-step"><div class="funnel-label">已触达</div><div class="funnel-value">612</div><div class="funnel-change">47.7%</div></div>
+              <div class="funnel-step"><div class="funnel-label">合作确认</div><div class="funnel-value">186</div><div class="funnel-change">30.4%</div></div>
+              <div class="funnel-step"><div class="funnel-label">内容发布</div><div class="funnel-value">134</div><div class="funnel-change">72.0%</div></div>
+            </div>
+          </section>
+          <section class="todo-card">
+            <div class="section-row"><h2>今日待办</h2><span class="pill pill-amber">12 项</span></div>
+            <div class="todo">
+              <div class="todo-item"><span class="todo-dot red"></span><div><div class="todo-text">视频逾期，待联系达人</div><div class="todo-meta">Campaign · 无糖饮品测试</div></div><span class="todo-num">4</span></div>
+              <div class="todo-item"><span class="todo-dot"></span><div><div class="todo-text">新视频待审核与打分</div><div class="todo-meta">短视频 · 需要反馈修改意见</div></div><span class="todo-num">5</span></div>
+              <div class="todo-item"><span class="todo-dot blue"></span><div><div class="todo-text">新回复待分配负责人</div><div class="todo-meta">葡语回复 · AI 已完成意图分类</div></div><span class="todo-num">3</span></div>
+            </div>
+          </section>
+        </div>
+        <section class="recent-card">
+          <div class="section-row"><div><h2>近期高匹配达人</h2><div class="muted" style="margin-top:4px">结合产品相关度、巴西受众与内容表现排序</div></div><button class="btn btn-small" data-go="discover">打开匹配列表 →</button></div>
+          <div class="table-scroll"><table><thead><tr><th>达人</th><th>内容方向</th><th>本地受众</th><th>视频中位播放</th><th>匹配度</th><th>状态</th></tr></thead><tbody id="overviewRows"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="page-view" id="page-discover">
+        <div class="page-heading">
+          <div><div class="eyebrow">达人发现 / 巴西本地 FMCG</div><h1>AI 达人匹配</h1><div class="subhead">按产品和目标筛选本地创作者，查看每条推荐背后的证据。</div></div>
+          <div class="heading-actions"><button class="btn" id="importBtn">⇧ 导入达人名单</button><button class="btn btn-primary" id="batchSelectedBtn">＋ 创建建联批次 <span id="selectedButtonCount"></span></button></div>
+        </div>
+        <div class="match-layout">
+          <aside class="filter-panel">
+            <div class="filter-head"><h3>快速筛选</h3><button class="btn btn-quiet btn-small" id="resetFilters">重置</button></div>
+            <div class="filter-body">
+              <div class="field"><label for="creatorSearch">搜索 handle / 关键词</label><input id="creatorSearch" placeholder="@handle 或内容关键词"></div>
+              <div class="field"><label for="categoryFilter">达人内容方向</label><select id="categoryFilter"><option value="all">全部 FMCG 相关</option><option value="food">食品饮料</option><option value="beauty">个护美妆</option><option value="home">家清家居</option><option value="family">母婴家庭</option><option value="pet">宠物用品</option></select></div>
+              <div class="field"><label for="stateFilter">达人所在州</label><select id="stateFilter"><option value="all">全巴西</option><option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="BA">Bahia</option></select></div>
+              <div class="field"><label for="viewRange">视频中位播放量 <span id="viewRangeLabel">≥ 5,000</span></label><input id="viewRange" type="range" min="0" max="50000" step="1000" value="5000"></div>
+              <div class="field"><label for="scoreRange">最低匹配度 <span id="scoreRangeLabel">70 分</span></label><input id="scoreRange" type="range" min="40" max="95" step="5" value="70"></div>
+              <label class="checkline"><input id="brazilAudience" type="checkbox" checked> 巴西受众占比 ≥ 60%</label>
+              <label class="checkline"><input id="ptLanguage" type="checkbox" checked> 葡萄牙语内容</label>
+              <label class="checkline"><input id="excludeContacted" type="checkbox" checked> 排除已联系 / 黑名单</label>
+              <div class="field"><label for="offerFit">合作方式</label><select id="offerFit"><option value="all">不限</option><option value="commission">纯佣 / CPS</option><option value="gifted">寄样合作</option><option value="paid">付费内容</option><option value="ugc">UGC 素材</option></select></div>
+            </div>
+            <div class="filter-footer"><button class="btn btn-primary" id="applyFilters">✦ 查看匹配达人</button></div>
+          </aside>
+          <div class="match-main">
+            <div class="match-context">
+              <div class="section-row" style="margin-bottom:12px"><div><h3>本次匹配：产品画像</h3><div class="muted" style="margin-top:4px">AI 从产品信息提取筛选信号，提交前可编辑。</div></div><span class="pill pill-blue">BRAZIL · PT-BR</span></div>
+              <div class="product-row">
+                <div class="field"><label for="productName">产品 / 品牌</label><input id="productName" value="巴西 FMCG 新品 · 演示商品"></div>
+                <div class="field"><label for="productCategory">产品品类</label><select id="productCategory"><option value="food">食品饮料</option><option value="beauty">个护美妆</option><option value="home">家清家居</option><option value="family">母婴家庭</option><option value="pet">宠物用品</option></select></div>
+                <div class="field"><label for="campaignGoal">活动目标</label><select id="campaignGoal"><option value="sales">销售转化</option><option value="awareness">品牌种草</option><option value="ugc">UGC 素材</option></select></div>
+              </div>
+              <div class="goal-row"><span class="goal-label">推荐权重</span><button class="goal-btn active" data-goal="sales">销售转化</button><button class="goal-btn" data-goal="awareness">品牌种草</button><button class="goal-btn" data-goal="ugc">UGC 素材</button><span class="goal-hint" id="goalHint">内容相关 30% · 巴西受众 25% · 表现 20%</span></div>
+            </div>
+            <div class="match-toolbar">
+              <div class="match-count"><strong id="matchCount">0</strong> 位达人符合当前条件 <span class="muted">· 当前库 <span id="currentCreatorCount">—</span> 位</span></div>
+              <div class="toolbar-actions"><button class="btn btn-small" id="shortlistBtn">♡ 收藏所选 <span id="shortlistButtonCount"></span></button><select id="sortSelect" aria-label="排序"><option value="score">按匹配度排序</option><option value="views">按中位播放排序</option><option value="audience">按巴西受众排序</option></select></div>
+            </div>
+            <div class="tier-tabs" role="tablist" aria-label="匹配分层">
+              <button class="tier-tab active" data-tier="all">全部 <span id="tierAll">0</span></button>
+              <button class="tier-tab" data-tier="high">高匹配 <span id="tierHigh">0</span></button>
+              <button class="tier-tab" data-tier="test">可测试 <span id="tierTest">0</span></button>
+              <button class="tier-tab" data-tier="unknown">信息待补 <span id="tierUnknown">0</span></button>
+            </div>
+            <div class="result-list" id="creatorResults" aria-live="polite"></div>
+            <div class="source-note">演示数据，仅用于展示筛选和反馈交互。真实项目应区分公开资料、TikTok 授权数据和内部合作记录。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-view" id="page-creators">
+        <div class="page-heading"><div><div class="eyebrow">关系资产 / 统一管理</div><h1>达人库</h1><div class="subhead">导入名单、去重、维护合作标签，并追踪达人全生命周期。</div></div><div class="heading-actions"><button class="btn" id="creatorImportBtn">⇧ 导入名单</button><button class="btn btn-primary" data-go="discover">✦ AI 匹配</button></div></div>
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-head">达人总数 <span>当前工作区</span></div><div class="metric-num" id="libraryTotalStat">—</div><div class="metric-foot">含待核实资料 286 位</div></div>
+          <div class="metric"><div class="metric-head">高潜达人 <span>匹配度 ≥ 85</span></div><div class="metric-num" id="libraryHighStat">—</div><div class="metric-foot">可加入当前活动名单</div></div>
+          <div class="metric"><div class="metric-head">已建立合作 <span>历史累计</span></div><div class="metric-num">612</div><div class="metric-foot">已沉淀履约与内容评分</div></div>
+          <div class="metric"><div class="metric-head">需关注 <span>状态提醒</span></div><div class="metric-num">37</div><div class="metric-foot">含逾期、重复或黑名单</div></div>
+        </div>
+        <div class="section-card card-pad">
+          <div class="list-toolbar"><div class="list-filter"><input id="librarySearch" placeholder="搜索姓名或 handle"><select id="libraryStatus"><option value="all">所有状态</option><option>高潜待建联</option><option>建联中</option><option>已合作</option><option>待复核</option></select><select id="libraryCategory"><option value="all">所有品类</option><option>食品饮料</option><option>个护美妆</option><option>家清家居</option><option>母婴家庭</option><option>宠物用品</option></select></div><span class="muted">共 <span id="libraryCreatorCount">—</span> 位达人</span></div>
+          <div class="table-scroll"><table><thead><tr><th><input type="checkbox" id="librarySelectAll" aria-label="全选"></th><th>达人</th><th>地区 / 语言</th><th>内容方向</th><th>匹配度</th><th>合作标签</th><th>当前状态</th><th>最近更新</th></tr></thead><tbody id="libraryRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="page-view" id="page-outreach">
+        <div class="page-heading"><div><div class="eyebrow">建联任务 / 分批管理</div><h1>建联批次</h1><div class="subhead">AI 准备分层名单和葡语话术；按已授权渠道执行并记录回复。</div></div><div class="heading-actions"><button class="btn" data-go="discover">＋ 从匹配结果创建</button></div></div>
+        <div class="outreach-grid">
+          <section class="outreach-card">
+            <div class="section-row"><div><h2>新建建联批次</h2><div class="muted" style="margin-top:5px">将所选达人分组，生成个性化联系草稿</div></div><span class="pill pill-gray">草稿模式</span></div>
+            <div class="field"><label for="batchName">批次名称</label><input id="batchName" value="巴西 FMCG · 第一轮达人招募"></div>
+            <div class="field"><label for="batchProduct">关联产品</label><select id="batchProduct"><option>巴西 FMCG 新品 · 演示商品</option><option>品牌种草测试活动</option></select></div>
+            <div class="field"><span class="field-label">触达渠道</span></div>
+            <label class="channel selected"><input type="radio" name="channel" value="tiktok-one" checked><span><span class="channel-title">TikTok One 项目邀请</span><span class="channel-desc">适用于平台内可发现且符合条件的达人；项目邀请由 TikTok One 发送。</span></span></label>
+            <label class="channel"><input type="radio" name="channel" value="email"><span><span class="channel-title">公开商务邮箱</span><span class="channel-desc">使用达人公开提供的商务联系邮箱，附活动邀请链接和葡语话术。</span></span></label>
+            <label class="channel"><input type="radio" name="channel" value="whatsapp"><span><span class="channel-title">公开 WhatsApp 商务号</span><span class="channel-desc">优先联系主页明确用于商务合作的号码，并保留触达与退订记录。</span></span></label>
+            <label class="channel"><input type="radio" name="channel" value="tiktok-dm"><span><span class="channel-title">TikTok 私信 · 需确认官方授权</span><span class="channel-desc">系统可生成话术与任务队列；是否能通过 API 主动发起私信取决于 TikTok 授权和账号资格。</span></span></label>
+            <div class="notice">普通 TikTok 达人不一定在 Affiliate 或 TikTok One 达人池内。原型不会假定 handle 可直接批量私信；没有可用官方权限时，先生成草稿并展示公开商务渠道。</div>
+            <div class="field"><label for="outreachPrompt">AI 建联重点</label><textarea id="outreachPrompt">用巴西葡萄牙语简洁介绍品牌与产品，结合达人近期真实内容说明合作契合点，明确合作方式和下一步。不要编造达人信息。</textarea></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" id="generateBatch">✦ 生成批次与话术</button><button class="btn" id="previewMessage">预览葡语话术</button></div>
+          </section>
+          <section class="outreach-card">
+            <div class="section-row"><h2>批次概况</h2><span class="pill pill-blue">本周</span></div>
+            <div class="progress-wrap"><div class="progress-label"><span>候选达人已分层</span><b>43%</b></div><div class="progress-track"><i style="width:43%"></i></div></div>
+            <div class="progress-wrap"><div class="progress-label"><span>建联草稿已准备</span><b>612 / 1,284</b></div><div class="progress-track"><i style="width:48%;background:#63a88d"></i></div></div>
+            <div class="progress-wrap"><div class="progress-label"><span>已进入合作沟通</span><b>186 / 612</b></div><div class="progress-track"><i style="width:30%;background:#d4a365"></i></div></div>
+            <div class="timeline">
+              <div class="timeline-item done"><span class="timeline-dot"></span><div><div class="timeline-title">导入与去重</div><div class="timeline-copy">handle 标准化、重复检查、名单来源记录</div></div></div>
+              <div class="timeline-item done"><span class="timeline-dot"></span><div><div class="timeline-title">AI 产品匹配</div><div class="timeline-copy">按内容方向、受众和表现分层</div></div></div>
+              <div class="timeline-item"><span class="timeline-dot"></span><div><div class="timeline-title">人工确认并执行触达</div><div class="timeline-copy">使用可用的官方邀请或公开商务渠道</div></div></div>
+              <div class="timeline-item"><span class="timeline-dot"></span><div><div class="timeline-title">回复分流与合作推进</div><div class="timeline-copy">AI 意图分类，负责人跟进佣金、样品和档期</div></div></div>
+            </div>
+          </section>
+        </div>
+        <section class="recent-card outreach-table">
+          <div class="section-row"><div><h2>最近批次</h2><div class="muted" style="margin-top:4px">建联结果会回流至达人匹配模型和团队复盘</div></div><button class="btn btn-small" id="refreshBatches">刷新</button></div>
+          <div class="table-scroll"><table><thead><tr><th>批次</th><th>渠道</th><th>达人</th><th>已联系</th><th>已回复</th><th>正向意向</th><th>状态</th></tr></thead><tbody id="batchRows"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="page-view" id="page-pipeline">
+        <div class="page-heading"><div><div class="eyebrow">合作推进 / 样品与内容履约</div><h1>合作履约</h1><div class="subhead">从合作确认到视频回收与审核，把每一步变成可追踪的任务。</div></div><div class="heading-actions"><button class="btn btn-primary" id="addTask">＋ 新建跟进任务</button></div></div>
+        <div class="metric-grid"><div class="metric"><div class="metric-head">待寄样 <span>需确认地址</span></div><div class="metric-num">28</div><div class="metric-foot">预计本周发出</div></div><div class="metric"><div class="metric-head">运输中 <span>物流同步</span></div><div class="metric-num">41</div><div class="metric-foot">已签收 32 · 在途 9</div></div><div class="metric"><div class="metric-head">内容待发布 <span>履约阶段</span></div><div class="metric-num">53</div><div class="metric-foot">逾期需提醒 4 位</div></div><div class="metric"><div class="metric-head">视频待审核 <span>素材回收</span></div><div class="metric-num">17</div><div class="metric-foot">平均审核时长 1.2 天</div></div></div>
+        <div class="section-card card-pad"><div class="section-row"><div><h2>合作看板</h2><div class="muted" style="margin-top:4px">拖拽交互在后续版本接入；当前原型可查看分阶段任务</div></div><select class="form-select" style="height:33px;border:1px solid #dfe5ec;border-radius:7px;padding:0 8px;color:#5e6e80"><option>当前活动：FMCG 新品种草</option><option>全部活动</option></select></div><div class="pipeline">
+          <div class="pipe-col"><div class="pipe-head">合作确认 <span class="pipe-count">12</span></div><div class="pipe-card"><div class="pipe-card-name">Larissa M. · @larissacompartilha</div><div class="pipe-card-meta">食品饮料 · 纯佣合作</div><div class="pipe-due">待确认佣金比例</div></div><div class="pipe-card"><div class="pipe-card-name">João P. · @joaotestou</div><div class="pipe-card-meta">生活方式 · 寄样合作</div></div></div>
+          <div class="pipe-col"><div class="pipe-head">待寄样 <span class="pipe-count">28</span></div><div class="pipe-card"><div class="pipe-card-name">Camila R. · @camilaprovou</div><div class="pipe-card-meta">São Paulo · 地址已确认</div><div class="pipe-due">预计今天出库</div></div></div>
+          <div class="pipe-col"><div class="pipe-head">运输中 <span class="pipe-count">41</span></div><div class="pipe-card"><div class="pipe-card-name">Mariana L. · @marianarecomenda</div><div class="pipe-card-meta">物流单号已录入</div><div class="pipe-due">预计 11 月 15 日送达</div></div></div>
+          <div class="pipe-col"><div class="pipe-head">内容待发布 <span class="pipe-count">53</span></div><div class="pipe-card"><div class="pipe-card-name">Bruna S. · @brunapratica</div><div class="pipe-card-meta">签收 11 月 3 日 · 脚本已发</div><div class="pipe-due">提醒时间：今天</div></div></div>
+          <div class="pipe-col"><div class="pipe-head">视频待审核 <span class="pipe-count">17</span></div><div class="pipe-card"><div class="pipe-card-name">Rafaela C. · @rafacozinha</div><div class="pipe-card-meta">视频已回收 · 广告码待补</div><div class="pipe-due">待内容团队评分</div></div></div>
+        </div></div>
+      </section>
+
+      <section class="page-view" id="page-insights">
+        <div class="page-heading"><div><div class="eyebrow">优化与复盘 / 反馈闭环</div><h1>数据复盘</h1><div class="subhead">比较筛选、建联、履约和内容结果，持续校准达人匹配权重。</div></div><div class="heading-actions"><select style="height:36px;border:1px solid #dfe5ec;background:#fff;border-radius:7px;padding:0 10px;color:#5e6e80"><option>近 30 天</option><option>本季度</option></select><button class="btn">⇩ 导出复盘</button></div></div>
+        <div class="metric-grid"><div class="metric"><div class="metric-head">有效触达回复率 <span>触达效果</span></div><div class="metric-num">24.8%</div><div class="metric-foot"><span class="metric-up">+3.6%</span> 较上一周期</div></div><div class="metric"><div class="metric-head">合作确认率 <span>正向意向</span></div><div class="metric-num">30.4%</div><div class="metric-foot">186 / 612 位已触达达人</div></div><div class="metric"><div class="metric-head">内容履约率 <span>已发布 / 已确认</span></div><div class="metric-num">72%</div><div class="metric-foot"><span class="metric-up">+8.4%</span> 较上一周期</div></div><div class="metric"><div class="metric-head">优质内容率 <span>评分 ≥ 4</span></div><div class="metric-num">61%</div><div class="metric-foot">基于团队审核评分</div></div></div>
+        <div class="review-grid">
+          <section class="recent-card" style="margin:0"><div class="section-row"><div><h2>建联批次效果对比</h2><div class="muted" style="margin-top:4px">正向意向达人 / 已触达人</div></div><span class="pill pill-gray">演示数据</span></div><div class="bar-chart" role="img" aria-label="四个批次的触达人数和正向意向人数对比"><div class="bar-group"><div class="bar" style="height:76%"></div><div class="bar secondary" style="height:22%"></div><span class="bar-label">食品测评</span></div><div class="bar-group"><div class="bar" style="height:65%"></div><div class="bar secondary" style="height:27%"></div><span class="bar-label">个护体验</span></div><div class="bar-group"><div class="bar" style="height:82%"></div><div class="bar secondary" style="height:31%"></div><span class="bar-label">家庭日常</span></div><div class="bar-group"><div class="bar" style="height:54%"></div><div class="bar secondary" style="height:18%"></div><span class="bar-label">区域小达人</span></div><div class="bar-group"><div class="bar" style="height:72%"></div><div class="bar secondary" style="height:34%"></div><span class="bar-label">新品招募</span></div></div><div class="legend"><span><i></i>已触达</span><span><i class="secondary"></i>正向意向</span></div></section>
+          <section class="recent-card" style="margin:0"><div class="section-row"><h2>匹配模型反馈</h2><span class="pill pill-green">本周期校准</span></div><div style="font-size:11px;color:#64758a;line-height:1.65">筛选建议权重来自活动目标；达人评分和履约数据会形成历史反馈，不会自动覆盖团队设定。</div><div class="progress-wrap"><div class="progress-label"><span>品类与内容相关</span><b>30%</b></div><div class="progress-track"><i style="width:30%"></i></div></div><div class="progress-wrap"><div class="progress-label"><span>巴西受众匹配</span><b>25%</b></div><div class="progress-track"><i style="width:25%;background:#65a68d"></i></div></div><div class="progress-wrap"><div class="progress-label"><span>内容表现与稳定性</span><b>20%</b></div><div class="progress-track"><i style="width:20%;background:#d7a25e"></i></div></div><div class="progress-wrap"><div class="progress-label"><span>内容质量与履约</span><b>15%</b></div><div class="progress-track"><i style="width:15%;background:#9a83d6"></i></div></div><div class="progress-wrap"><div class="progress-label"><span>合作可行性</span><b>10%</b></div><div class="progress-track"><i style="width:10%;background:#7ba5c8"></i></div></div><button class="btn btn-small" id="weightFeedback">查看反馈明细</button></section>
+        </div>
+        <section class="recent-card"><div class="section-row"><div><h2>内容审核与评分</h2><div class="muted" style="margin-top:4px">审核结果回流至达人档案，作为下一轮合作参考</div></div><span class="pill pill-amber">待审核 17</span></div><div id="reviewItems" class="review-list"></div></section>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">详情</h2><button class="modal-x" id="modalClose" aria-label="关闭">×</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot"><span class="muted" id="modalHint"></span><div style="display:flex;gap:8px"><button class="btn" id="modalCancel">取消</button><button class="btn btn-primary" id="modalConfirm">确认</button></div></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="csvInput" accept=".csv,.txt" hidden>
+
+<script>
+  const creators = [
+    {id:1,name:"Mariana Lopes",handle:"@marianaprovou",initial:"ML",avatar:"",city:"São Paulo",state:"SP",language:"PT-BR",category:"food",categoryName:"食品测评 · 家庭日常",followers:184000,views:24800,engagement:6.8,audience:82,score:94,confidence:"高",status:"高潜待建联",offer:["commission","gifted"],tags:["食谱测评","日常场景","更新稳定"],reason:"近期内容持续测评零食与饮品，受众主要在巴西，适合新品试吃与真实体验。",evidence:"近 30 天 8 条视频涉及食品试吃；公开视频受众地区样本显示巴西占比较高。",review:"未合作",contact:"邮箱未补充",posts:8,active:"2 天前"},
+    {id:2,name:"Camila Rocha",handle:"@camilaprovou",initial:"CR",avatar:"a2",city:"Rio de Janeiro",state:"RJ",language:"PT-BR",category:"food",categoryName:"生活方式 · 美食",followers:92000,views:17600,engagement:8.1,audience:76,score:91,confidence:"高",status:"建联中",offer:["gifted","paid"],tags:["开箱体验","高互动","生活方式"],reason:"开箱和试用类视频互动活跃，内容自然融入家庭消费场景，适合寄样测试。",evidence:"近 30 天 6 条生活方式视频；家用产品评论区讨论度较高。",review:"回复积极",contact:"公开商务邮箱",posts:6,active:"昨天"},
+    {id:3,name:"Rafaela Costa",handle:"@rafacozinha",initial:"RC",avatar:"a3",city:"Belo Horizonte",state:"MG",language:"PT-BR",category:"food",categoryName:"美食 · 快手食谱",followers:257000,views:38200,engagement:5.9,audience:71,score:89,confidence:"中",status:"高潜待建联",offer:["commission","ugc"],tags:["食谱内容","产品演示","高播放"],reason:"擅长在食谱中演示食材和饮品；巴西受众匹配较好，城市数据仍需核实。",evidence:"最近视频出现早餐与饮品场景；受众地区字段部分缺失。",review:"未合作",contact:"公开 WhatsApp",posts:10,active:"3 天前"},
+    {id:4,name:"Bruna Santos",handle:"@brunapratica",initial:"BS",avatar:"a4",city:"Curitiba",state:"PR",language:"PT-BR",category:"home",categoryName:"家居 · 清洁日常",followers:71000,views:9800,engagement:7.4,audience:88,score:86,confidence:"中",status:"已合作",offer:["gifted","ugc"],tags:["实用技巧","本地受众","履约良好"],reason:"家清产品演示清晰，过往合作视频按时发布；适合做家居消费品试用。",evidence:"内部记录：2 次合作均按期发布；最近家清内容互动高于账号中位数。",review:"履约良好",contact:"WhatsApp 已验证",posts:7,active:"今天"},
+    {id:5,name:"João Pereira",handle:"@joaotestou",initial:"JP",avatar:"a5",city:"Salvador",state:"BA",language:"PT-BR",category:"beauty",categoryName:"个护 · 产品测评",followers:138000,views:15200,engagement:4.9,audience:64,score:79,confidence:"中",status:"高潜待建联",offer:["paid","ugc"],tags:["测评表达","需核对受众","稳定更新"],reason:"具备清楚的产品对比表达，但巴西受众比例低于当前偏好，建议先小批测试。",evidence:"近 30 天 5 条测评类视频；受众国家数据为估算值。",review:"未合作",contact:"主页未公开",posts:5,active:"4 天前"},
+    {id:6,name:"Ana Beatriz",handle:"@anabelezareal",initial:"AB",avatar:"a6",city:"São Paulo",state:"SP",language:"PT-BR",category:"beauty",categoryName:"美妆 · 个护教程",followers:326000,views:41600,engagement:7.9,audience:91,score:96,confidence:"高",status:"高潜待建联",offer:["paid","ugc"],tags:["个护垂类","巴西受众","演示能力"],reason:"个护垂类契合度和巴西受众占比都高，教程表达适合展示产品使用方式。",evidence:"近 30 天 9 条个护教程；多个公开视频包含完整产品演示。",review:"未合作",contact:"公开商务邮箱",posts:9,active:"1 天前"},
+    {id:7,name:"Pedro Almeida",handle:"@pedroemcasa",initial:"PA",avatar:"a2",city:"Campinas",state:"SP",language:"PT-BR",category:"home",categoryName:"家庭生活 · 家清",followers:56000,views:6300,engagement:6.1,audience:79,score:73,confidence:"低",status:"待复核",offer:["gifted","commission"],tags:["家居场景","资料不全","小体量"],reason:"产品场景相关，但受众地区和商务合作方式暂缺，适合补充资料后再决定。",evidence:"公开内容包含家庭清洁场景；受众和历史合作数据未授权。",review:"未合作",contact:"资料待补",posts:4,active:"12 天前"},
+    {id:8,name:"Isabela Martins",handle:"@isamamae",initial:"IM",avatar:"a3",city:"Recife",state:"PE",language:"PT-BR",category:"family",categoryName:"母婴 · 家庭生活",followers:203000,views:22700,engagement:8.7,audience:83,score:88,confidence:"中",status:"高潜待建联",offer:["gifted","paid"],tags:["家庭决策","高互动","口碑分享"],reason:"母婴家庭内容评论互动高，适合家庭消费品；需按具体产品确认受众年龄与合规要求。",evidence:"近 30 天 7 条家庭内容；评论区常见真实使用讨论。",review:"未合作",contact:"公开商务邮箱",posts:7,active:"2 天前"}
+  ];
+  const batches = [
+    {name:"FMCG 新品 · 第一轮",channel:"TikTok One 项目邀请",creators:186,sent:142,replied:39,positive:22,status:"进行中"},
+    {name:"家庭日常 · 寄样招募",channel:"公开商务邮箱",creators:94,sent:94,replied:28,positive:16,status:"已完成"},
+    {name:"个护体验 · UGC 合作",channel:"公开 WhatsApp 商务号",creators:72,sent:51,replied:14,positive:9,status:"进行中"}
+  ];
+  let chosen = new Set();
+  let saved = new Set();
+  let feedbackById = {};
+  let currentTier = "all";
+  let currentPage = "overview";
+  let pendingAction = null;
+  let toastTimer = null;
+  const goalHints = {sales:"内容相关 30% · 巴西受众 25% · 表现 20%",awareness:"巴西受众 30% · 内容表现 25% · 品类相关 25%",ugc:"内容质量 35% · 产品演示 25% · 合作可行 20%"};
+  const goalWeights = {sales:[30,25,20,15,10],awareness:[25,30,25,10,10],ugc:[35,20,15,20,10]};
+  const $ = (id)=>document.getElementById(id);
+  const escapeHtml = (s)=>String(s).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function showToast(text){const t=$("toast");t.textContent=text;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2600)}
+  const mobileNavQuery=window.matchMedia("(max-width:820px)");
+  function setMobileNav(open){const sidebar=$("mainSidebar"),scrim=$("navScrim"),button=$("mobileMenuBtn");sidebar.classList.toggle("open",open);scrim.classList.toggle("open",open);sidebar.inert=mobileNavQuery.matches&&!open;button.setAttribute("aria-expanded",String(open));button.setAttribute("aria-label",open?"关闭导航":"打开导航");document.body.style.overflow=open?"hidden":""}
+  function syncMobileNav(){if(mobileNavQuery.matches){setMobileNav(false)}else{const sidebar=$("mainSidebar");sidebar.classList.remove("open");sidebar.inert=false;$("navScrim").classList.remove("open");document.body.style.overflow=""}}
+  function navTo(page){currentPage=page;document.querySelectorAll(".nav-item").forEach(n=>{const active=n.dataset.page===page;n.classList.toggle("active",active);if(active)n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});document.querySelectorAll(".page-view").forEach(v=>v.classList.toggle("active",v.id==="page-"+page));const names={overview:"工作台",discover:"发现达人",creators:"达人库",outreach:"建联中心",pipeline:"合作履约",insights:"数据复盘"};$("crumbCurrent").textContent=names[page]||"工作台";window.scrollTo(0,0);if(page==="discover")renderCreators();if(page==="creators")renderLibrary();if(page==="outreach")renderBatches();if(mobileNavQuery.matches)setMobileNav(false)}
+  function syncCreatorCounts(){const total=creators.length,high=creators.filter(c=>c.score>=85).length;["creatorTotalStat","libraryTotalStat","funnelCreatorTotal","currentCreatorCount","libraryCreatorCount"].forEach(id=>{if($(id))$(id).textContent=formatNum(total)});["highMatchStat","libraryHighStat"].forEach(id=>{if($(id))$(id).textContent=formatNum(high)})}
+  function iconClass(c){return c.avatar?" "+c.avatar:""}
+  function creatorRow(c){return '<tr><td><div class="creator-cell"><div class="avatar'+iconClass(c)+'">'+escapeHtml(c.initial)+'</div><div><div class="creator-name">'+escapeHtml(c.name)+'</div><div class="creator-handle">'+escapeHtml(c.handle)+'</div></div></div></td><td>'+escapeHtml(c.categoryName)+'</td><td>'+c.audience+'%</td><td>'+formatNum(c.views)+'</td><td><b style="color:#496bd0">'+c.score+'</b></td><td><span class="pill '+(c.status==="已合作"?"pill-green":c.status==="建联中"?"pill-blue":"pill-gray")+'">'+escapeHtml(c.status)+'</span></td></tr>'}
+  function formatNum(n){return n>=1000?(n/1000).toFixed(n%1000===0?0:1)+"k":String(n)}
+  function scoreFor(c){
+    const product=$("productCategory").value,goal=$("campaignGoal").value;
+    let score=c.score+(c.category===product?7:-5);
+    if(goal==="sales")score+=Math.round(c.audience/28)+Math.round(c.engagement/4);
+    if(goal==="awareness")score+=Math.round(c.views/14000)+Math.round(c.audience/35);
+    if(goal==="ugc")score+=(c.tags.some(t=>/演示|测评|技巧|食谱/.test(t))?6:0)+(c.contact.includes("未")?0:3);
+    const feedback=feedbackById[c.id];
+    if(feedback==="适合当前产品")score+=3;
+    if(feedback==="品类不匹配")score-=14;
+    if(feedback==="受众地区不匹配")score-=10;
+    if(feedback==="内容质量不合适")score-=8;
+    if(feedback==="费用不合适")score-=5;
+    return Math.max(40,Math.min(99,score));
+  }
+  $("overviewRows").innerHTML=creators.slice(0,4).map(creatorRow).join("");
+  function selectedCategory(){const x=$("categoryFilter").value;return x}
+  function getFiltered(){
+    const q=$("creatorSearch").value.trim().toLowerCase();
+    const cat=selectedCategory(),state=$("stateFilter").value,minViews=Number($("viewRange").value),minScore=Number($("scoreRange").value),aud=$("brazilAudience").checked,pt=$("ptLanguage").checked,exclude=$("excludeContacted").checked,offer=$("offerFit").value;
+    let list=creators.filter(c=>{
+      const search=!q||[c.name,c.handle,c.categoryName,c.tags.join(" "),c.city].join(" ").toLowerCase().includes(q);
+      const catMatch=cat==="all"||c.category===cat;
+      const stateMatch=state==="all"||c.state===state;
+      const languageMatch=!pt||c.language==="PT-BR";
+      const audienceMatch=!aud||c.audience>=60;
+      const statusMatch=!exclude||!["黑名单","已联系","建联中","已合作"].includes(c.status);
+      const offerMatch=offer==="all"||c.offer.includes(offer);
+      const score=scoreFor(c);
+      const tierMatch=currentTier==="all"||(currentTier==="high"&&score>=85)||(currentTier==="test"&&score>=70&&score<85)||(currentTier==="unknown"&&(c.confidence==="低"||c.status==="待复核"));
+      return search&&catMatch&&stateMatch&&c.views>=minViews&&score>=minScore&&languageMatch&&audienceMatch&&statusMatch&&offerMatch&&tierMatch;
+    });
+    const sort=$("sortSelect").value;
+    list.sort((a,b)=>sort==="views"?b.views-a.views:sort==="audience"?b.audience-a.audience:scoreFor(b)-scoreFor(a));
+    return list;
+  }
+  function renderCreatorCard(c){
+    const isChosen=chosen.has(c.id),isSaved=saved.has(c.id);
+    const meta=[["粉丝",formatNum(c.followers)],["视频中位播放",formatNum(c.views)],["互动率",c.engagement+"%"],["巴西受众",c.audience+"%"]];
+    const score=scoreFor(c);
+    return '<article class="creator-card"><div class="creator-main"><div class="creator-top"><label aria-label="选择 '+escapeHtml(c.name)+'"><input type="checkbox" class="creator-check" data-id="'+c.id+'" '+(isChosen?"checked":"")+'></label><div class="avatar'+iconClass(c)+'">'+escapeHtml(c.initial)+'</div><div><div class="creator-name">'+escapeHtml(c.name)+' <span class="pill pill-gray" style="margin-left:4px">'+escapeHtml(c.city)+'</span></div><div class="creator-handle">'+escapeHtml(c.handle)+' · '+escapeHtml(c.language)+'</div></div></div><div class="creator-meta">'+meta.map(x=>"<span>"+x[0]+" <strong>"+x[1]+"</strong></span>").join("")+'</div><div class="tag-row">'+c.tags.map((t,i)=>'<span class="tag '+(i===0?"good":"")+'">'+escapeHtml(t)+'</span>').join("")+'</div><div class="reason"><b>匹配理由</b> · '+escapeHtml(c.reason)+'</div></div><div class="match-score"><div class="score-head"><div class="score-num">'+score+'</div><div><div class="creator-name">匹配度</div><div class="score-caption">目标权重 · '+$("campaignGoal").selectedOptions[0].text+'</div></div></div><div class="score-bar"><span style="width:'+score+'%"></span></div><div class="confidence">资料可信度：'+c.confidence+' · <button class="btn btn-quiet btn-small" data-action="detail" data-id="'+c.id+'">查看证据</button></div><div class="score-actions"><button class="btn btn-small" data-action="save" data-id="'+c.id+'">'+(isSaved?"✓ 已收藏":"♡ 收藏")+'</button><button class="btn btn-small" data-action="draft" data-id="'+c.id+'">葡语邀约</button></div></div></article>';
+  }
+  function renderCreators(){
+    const list=getFiltered();
+    $("matchCount").textContent=list.length;
+    $("tierAll").textContent=creators.filter(c=>{const cat=selectedCategory();return (cat==="all"||c.category===cat)&&($("stateFilter").value==="all"||c.state===$("stateFilter").value)}).length;
+    $("tierHigh").textContent=creators.filter(c=>scoreFor(c)>=85).length;
+    $("tierTest").textContent=creators.filter(c=>scoreFor(c)>=70&&scoreFor(c)<85).length;
+    $("tierUnknown").textContent=creators.filter(c=>c.confidence==="低"||c.status==="待复核").length;
+    $("selectedButtonCount").textContent=chosen.size?"("+chosen.size+")":"";
+    $("shortlistButtonCount").textContent=saved.size?"("+saved.size+")":"";
+    $("creatorResults").innerHTML=list.length?list.map(renderCreatorCard).join(""):'<div class="empty-state">没有达人符合当前组合条件。可尝试降低最低播放量、扩大内容方向或取消受众筛选。</div>';
+    document.querySelectorAll(".creator-check").forEach(x=>x.addEventListener("change",()=>{const id=Number(x.dataset.id);x.checked?chosen.add(id):chosen.delete(id);renderCreators()}));
+    document.querySelectorAll('[data-action="save"]').forEach(x=>x.addEventListener("click",()=>{const id=Number(x.dataset.id);saved.has(id)?saved.delete(id):saved.add(id);renderCreators();showToast(saved.has(id)?"已加入短名单":"已从短名单移除")}));
+    document.querySelectorAll('[data-action="detail"]').forEach(x=>x.addEventListener("click",()=>openCreatorDetail(Number(x.dataset.id))));
+    document.querySelectorAll('[data-action="draft"]').forEach(x=>x.addEventListener("click",()=>openMessageDraft(Number(x.dataset.id))));
+  }
+  function openModal(title,body,hint,confirmLabel,onConfirm){
+    $("modalTitle").textContent=title;$("modalBody").innerHTML=body;$("modalHint").textContent=hint||"";$("modalConfirm").textContent=confirmLabel||"确认";pendingAction=onConfirm||null;$("modalBackdrop").classList.add("open");
+  }
+  function closeModal(){$("modalBackdrop").classList.remove("open");pendingAction=null}
+  function openCreatorDetail(id){
+    const c=creators.find(x=>x.id===id);if(!c)return;
+    const weights=goalWeights[$("campaignGoal").value]||goalWeights.sales;
+    const rows=[["产品与内容相关",c.category===$("productCategory").value?91:74,weights[0]],["巴西受众匹配",c.audience,weights[1]],["内容表现",Math.min(98,Math.round(c.engagement*10+25)),weights[2]],["内容质量 / 稳定性",Math.min(96,c.posts*7+35),weights[3]],["合作可行性",c.contact.includes("未")?48:78,weights[4]]];
+    const body='<div class="creator-top"><div class="avatar'+iconClass(c)+'" style="width:46px;height:46px">'+escapeHtml(c.initial)+'</div><div><div class="creator-name" style="font-size:14px">'+escapeHtml(c.name)+'</div><div class="creator-handle">'+escapeHtml(c.handle)+' · '+escapeHtml(c.city)+', Brasil</div></div><span class="pill pill-blue" style="margin-left:auto">'+scoreFor(c)+' 匹配</span></div><p style="font-size:11px;line-height:1.6;color:#66778a;margin:16px 0 11px">'+escapeHtml(c.evidence)+'</p><div class="section-row"><h3>评分拆解</h3><span class="muted">权重按当前活动目标</span></div>'+rows.map(r=>'<div class="progress-wrap"><div class="progress-label"><span>'+r[0]+' <span class="muted">· '+r[2]+'%</span></span><b>'+r[1]+'</b></div><div class="progress-track"><i style="width:'+r[1]+'%"></i></div></div>').join("")+'<div class="notice">资料可信度：'+c.confidence+'。联系人信息：'+escapeHtml(c.contact)+'。估算或缺失数据不会被当作已验证的达人表现。</div><div class="field"><label>本次筛选反馈</label><select id="detailFeedback"><option>适合当前产品</option><option>品类不匹配</option><option>受众地区不匹配</option><option>内容质量不合适</option><option>费用不合适</option><option>资料需要补充</option></select></div>';
+    openModal("达人匹配详情",body,"反馈用于改进本次活动的推荐", "保存反馈",()=>{const v=$("detailFeedback").value;feedbackById[id]=v;closeModal();renderCreators();showToast("已记录反馈："+v+" · 推荐分已更新")});
+  }
+  function openMessageDraft(id){
+    const c=creators.find(x=>x.id===id);if(!c)return;
+    const body=' <div class="field"><label>收件达人</label><input value="'+escapeHtml(c.handle)+' · '+escapeHtml(c.name)+'" readonly></div><div class="field"><label>联系渠道</label><select id="draftChannel"><option>TikTok One 项目邀请（如符合条件）</option><option>公开商务邮箱</option><option>公开 WhatsApp 商务号</option><option>TikTok 私信任务（权限待确认）</option></select></div><div class="field"><label>葡萄牙语（巴西）草稿</label><textarea id="messageText" rows="7">Oi, '+escapeHtml(c.name.split(" ")[0])+'! Tudo bem?\\n\\nSou da equipe Driflow e estamos buscando criadores no Brasil para uma parceria com uma marca de FMCG. Vimos seu conteúdo sobre '+escapeHtml(c.categoryName.toLowerCase())+' e acreditamos que pode haver uma boa conexão com a campanha.\\n\\nA proposta inclui '+($("campaignGoal").value==="ugc"?"produção de conteúdo UGC":"divulgação do produto e possibilidade de amostra")+'. Se fizer sentido para você, posso compartilhar os detalhes de remuneração, produto e cronograma?\\n\\nObrigada!\\nEquipe Driflow</textarea></div><div class="message-preview">个性化依据：'+escapeHtml(c.evidence)+'</div>';
+    openModal("生成葡语建联草稿",body,"草稿由演示资料生成，发送前需核对达人和合作信息","复制草稿",()=>{const v=$("messageText").value;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(()=>showToast("葡语草稿已复制")).catch(()=>showToast("草稿已准备，可手动复制"))}else showToast("葡语草稿已准备");closeModal()});
+  }
+  function renderLibrary(){
+    const q=($("librarySearch").value||"").toLowerCase();const status=$("libraryStatus").value;const category=$("libraryCategory").value;
+    let list=creators.filter(c=>(!q||(c.name+" "+c.handle).toLowerCase().includes(q))&&(status==="all"||c.status===status)&&(category==="all"||c.categoryName.startsWith(category)));
+    $("libraryRows").innerHTML=list.map(c=>'<tr><td><input type="checkbox" aria-label="选择 '+escapeHtml(c.name)+'"></td><td><div class="creator-cell"><div class="avatar'+iconClass(c)+'">'+escapeHtml(c.initial)+'</div><div><div class="creator-name">'+escapeHtml(c.name)+'</div><div class="creator-handle">'+escapeHtml(c.handle)+'</div></div></div></td><td>'+escapeHtml(c.city)+' · '+c.language+'</td><td>'+escapeHtml(c.categoryName)+'</td><td><b style="color:#496bd0">'+c.score+'</b> <span class="muted">/ 100</span></td><td>'+escapeHtml(c.review)+'</td><td><span class="pill '+(c.status==="已合作"?"pill-green":c.status==="建联中"?"pill-blue":"pill-gray")+'">'+escapeHtml(c.status)+'</span></td><td>'+escapeHtml(c.active)+'</td></tr>').join("")||'<tr><td colspan="8" style="text-align:center;padding:25px;color:#8290a1">没有符合条件的达人</td></tr>';
+  }
+  function renderBatches(){ $("batchRows").innerHTML=batches.map(b=>'<tr><td><b style="color:#344357">'+escapeHtml(b.name)+'</b></td><td>'+escapeHtml(b.channel)+'</td><td>'+b.creators+'</td><td>'+b.sent+'</td><td>'+b.replied+'</td><td>'+b.positive+'</td><td><span class="pill '+(b.status==="已完成"?"pill-green":"pill-blue")+'">'+b.status+'</span></td></tr>').join("");$("batchNavCount").textContent=String(batches.length)}
+  function updateGoal(goal){document.querySelectorAll(".goal-btn").forEach(b=>b.classList.toggle("active",b.dataset.goal===goal));const selectValue=goal==="ugc"?"ugc":goal;$("campaignGoal").value=selectValue;$("goalHint").textContent=goalHints[goal];renderCreators()}
+  function importFile(){ $("csvInput").click() }
+  function openImportModal(){
+    openModal("导入巴西达人名单",'<div class="notice">支持 CSV：第一列为 TikTok handle；可选字段包括姓名、城市、品类、公开商务邮箱、WhatsApp、备注。演示原型仅统计文件并展示格式提示。</div><div class="field"><label>名单文件</label><input type="file" id="modalCsv" accept=".csv,.txt"></div><div id="importStatus" class="muted">选择 CSV 文件后显示行数和样例 handle。</div>',"建议先进行重复和格式检查","完成",()=>{const x=$("modalCsv");if(x&&x.files&&x.files[0]){showToast("名单已载入演示流程；生产系统需接入安全数据存储")}else{showToast("可先继续使用演示名单")}closeModal()});
+    const input=$("modalCsv");input.addEventListener("change",()=>{const f=input.files[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{const lines=String(reader.result||"").split(/\r?\n/).filter(Boolean);const examples=lines.slice(0,4).join(" · ");$("importStatus").textContent="检测到约 "+Math.max(lines.length-1,0)+" 行；预览："+examples.slice(0,130)};reader.readAsText(f)});
+  }
+  function createBatch(){
+    const selectedCount=chosen.size||saved.size;
+    if(!selectedCount){showToast("请先在 AI 匹配结果中选择或收藏达人");return}
+    const name=$("batchName").value||"新建达人建联批次";
+    const channelEl=document.querySelector('input[name="channel"]:checked');
+    const channelMap={"tiktok-one":"TikTok One 项目邀请","email":"公开商务邮箱","whatsapp":"公开 WhatsApp 商务号","tiktok-dm":"TikTok 私信 · 权限待确认"};
+    const channel=channelMap[channelEl.value];
+    const warning=channelEl.value==="tiktok-dm"?"该渠道状态为待授权，只创建任务草稿，不会发送。":"原型只创建任务与话术草稿，不会实际发送。";
+    openModal("确认创建建联批次",'<div class="modal-grid"><div class="metric" style="min-height:86px"><div class="metric-head">达人数量</div><div class="metric-num" style="font-size:22px">'+selectedCount+'</div></div><div class="metric" style="min-height:86px"><div class="metric-head">触达渠道</div><div style="font-size:12px;font-weight:650;margin-top:13px">'+channel+'</div></div></div><div class="field" style="margin-top:14px"><label>批次名称</label><input id="confirmBatchName" value="'+escapeHtml(name)+'"></div><div class="notice">'+warning+'</div>',"下一步：团队审核并连接已授权渠道","创建草稿",()=>{const finalName=$("confirmBatchName").value||name;batches.unshift({name:finalName,channel:channel,creators:selectedCount,sent:0,replied:0,positive:0,status:"草稿"});$("metricOutreach").textContent=String(Number($("metricOutreach").textContent)+selectedCount);renderBatches();chosen.clear();closeModal();showToast("建联批次草稿已创建");navTo("outreach")});
+  }
+  function previewBatchMessage(){
+    const c=creators.find(x=>chosen.has(x.id))||creators[0];openMessageDraft(c.id);
+  }
+  document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>navTo(b.dataset.page)));
+  $("mobileMenuBtn").addEventListener("click",()=>setMobileNav($("mobileMenuBtn").getAttribute("aria-expanded")!=="true"));
+  $("navScrim").addEventListener("click",()=>setMobileNav(false));
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&mobileNavQuery.matches)setMobileNav(false)});
+  mobileNavQuery.addEventListener("change",syncMobileNav);
+  document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>navTo(b.dataset.go)));
+  document.querySelectorAll(".goal-btn").forEach(b=>b.addEventListener("click",()=>updateGoal(b.dataset.goal)));
+  document.querySelectorAll(".tier-tab").forEach(b=>b.addEventListener("click",()=>{currentTier=b.dataset.tier;document.querySelectorAll(".tier-tab").forEach(t=>t.classList.toggle("active",t===b));renderCreators()}));
+  ["creatorSearch","categoryFilter","stateFilter","viewRange","scoreRange","brazilAudience","ptLanguage","excludeContacted","offerFit","sortSelect","campaignGoal"].forEach(id=>$(id).addEventListener("input",()=>{if(id==="viewRange")$("viewRangeLabel").textContent="≥ "+formatNum(Number($("viewRange").value));if(id==="scoreRange")$("scoreRangeLabel").textContent=$("scoreRange").value+" 分";if(id==="campaignGoal")updateGoal($("campaignGoal").value);else renderCreators()}));
+  $("applyFilters").addEventListener("click",()=>{renderCreators();showToast("筛选已更新 · "+getFiltered().length+" 位达人符合条件")});
+  $("resetFilters").addEventListener("click",()=>{$("creatorSearch").value="";$("categoryFilter").value="all";$("stateFilter").value="all";$("viewRange").value="0";$("scoreRange").value="40";$("brazilAudience").checked=false;$("ptLanguage").checked=false;$("excludeContacted").checked=false;$("offerFit").value="all";$("viewRangeLabel").textContent="≥ 0";$("scoreRangeLabel").textContent="40 分";currentTier="all";document.querySelectorAll(".tier-tab").forEach(t=>t.classList.toggle("active",t.dataset.tier==="all"));renderCreators()});
+  $("sortSelect").addEventListener("change",renderCreators);
+  $("productCategory").addEventListener("change",()=>{const category=$("productCategory").value;$("categoryFilter").value=category;currentTier="all";document.querySelectorAll(".tier-tab").forEach(t=>t.classList.toggle("active",t.dataset.tier==="all"));renderCreators()});
+  $("batchSelectedBtn").addEventListener("click",createBatch);
+  $("shortlistBtn").addEventListener("click",()=>{chosen.forEach(id=>saved.add(id));renderCreators();showToast(chosen.size?"已收藏所选达人":"请先选择达人")});
+  $("importBtn").addEventListener("click",openImportModal);$("overviewImport").addEventListener("click",openImportModal);$("creatorImportBtn").addEventListener("click",openImportModal);
+  $("generateBatch").addEventListener("click",createBatch);$("previewMessage").addEventListener("click",previewBatchMessage);
+  document.querySelectorAll(".channel").forEach(l=>l.addEventListener("click",()=>{document.querySelectorAll(".channel").forEach(x=>x.classList.remove("selected"));l.classList.add("selected")}));
+  $("librarySearch").addEventListener("input",renderLibrary);$("libraryStatus").addEventListener("change",renderLibrary);$("libraryCategory").addEventListener("change",renderLibrary);
+  $("librarySelectAll").addEventListener("change",e=>document.querySelectorAll("#libraryRows input[type=checkbox]").forEach(x=>x.checked=e.target.checked));
+  $("refreshBatches").addEventListener("click",()=>{renderBatches();showToast("批次列表已刷新")});
+  $("modalClose").addEventListener("click",closeModal);$("modalCancel").addEventListener("click",closeModal);
+  $("modalBackdrop").addEventListener("click",e=>{if(e.target===$("modalBackdrop"))closeModal()});
+  $("modalConfirm").addEventListener("click",()=>{if(pendingAction)pendingAction();else closeModal()});
+  $("csvInput").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)showToast("已选择 "+f.name+" · 可在导入流程中预览");e.target.value=""});
+  $("globalSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){navTo("discover");$("creatorSearch").value=e.target.value;renderCreators()}});
+  $("notificationBtn").addEventListener("click",()=>showToast("你有 12 项待办：5 条视频审核、4 条履约提醒、3 条新回复"));
+  $("addTask").addEventListener("click",()=>openModal("新建跟进任务",'<div class="field"><label>达人 handle</label><input placeholder="@creator_handle"></div><div class="field"><label>任务类型</label><select><option>寄样跟进</option><option>提醒发布内容</option><option>索要广告码</option><option>视频审核</option></select></div><div class="field"><label>截止日期</label><input type="date"></div>',"任务分配后会出现在合作看板","创建任务",()=>{closeModal();showToast("跟进任务已加入演示看板")}));
+  $("weightFeedback").addEventListener("click",()=>openModal("筛选反馈明细",'<div class="notice">系统只将反馈用于当前活动的建议排序，不会自动改写团队设定的硬筛选条件。</div><div class="field"><label>最常见的未匹配原因</label><div class="feedback-options"><button class="feedback-option selected">受众不在巴西</button><button class="feedback-option">内容品类不符</button><button class="feedback-option">近期不活跃</button><button class="feedback-option">报价不符</button></div></div><div class="field"><label>推荐调整建议</label><div class="message-preview">提高“巴西受众匹配”权重 5%，或将受众数据缺失的达人移至“信息待补”，先不直接排除。</div></div>',"你可以在活动设置中调整权重","知道了",()=>closeModal()));
+  $("reviewItems").innerHTML=creators.slice(1,4).map((c,i)=>'<article class="review-item"><div><div class="creator-top"><div class="avatar'+iconClass(c)+'">'+escapeHtml(c.initial)+'</div><div><div class="creator-name">'+escapeHtml(c.name)+' · '+escapeHtml(c.handle)+'</div><div class="creator-handle">视频：'+["新品试吃体验","日常使用演示","快速食谱短视频"][i]+' · 已发布 2 天前</div></div></div><div class="feedback-options"><button class="feedback-option" data-review="'+c.id+'">查看视频</button><button class="feedback-option" data-feedback="'+c.id+'">标记内容优质</button><button class="feedback-option" data-feedback="'+c.id+'">需要修改</button></div></div><div style="text-align:right"><div class="review-score">'+(4.8-i*.4).toFixed(1)+'</div><div class="muted">内容评分</div></div></article>').join("");
+  document.addEventListener("click",e=>{const b=e.target.closest("[data-feedback]");if(b){b.classList.toggle("selected");showToast("审核反馈已记录，达人档案将保留此结果")};const r=e.target.closest("[data-review]");if(r){showToast("演示原型未连接外部视频")}
+  });
+  renderCreators();renderLibrary();renderBatches();syncCreatorCounts();syncMobileNav();
+</script>
+</body>
+</html>
